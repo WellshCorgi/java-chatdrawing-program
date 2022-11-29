@@ -22,8 +22,7 @@ class ChatRoomDisplay extends JFrame implements ActionListener, KeyListener, Lis
     public JTextField message;
 
     public ChatRoomDisplay(ClientThread thread) {
-        super("Chat-Application-대화방");
-
+        super("채팅방");
         cr_thread = thread;
         isSelected = false;
         isAdmin = false;
@@ -72,8 +71,11 @@ class ChatRoomDisplay extends JFrame implements ActionListener, KeyListener, Lis
 
         coerceOut = new JButton("강 제 퇴 장");
         coerceOut.setFont(font);
+        coerceOut.setForeground(Color.RED);
+        coerceOut.setBackground(Color.YELLOW);
         coerceOut.addActionListener(this);
         coerceOut.setBounds(445, 195, 100, 30);
+        coerceOut.setToolTipText("방장의 권한이 필요한 기능입니다.");
         coerceOut.setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
         c.add(coerceOut);
 
@@ -81,6 +83,7 @@ class ChatRoomDisplay extends JFrame implements ActionListener, KeyListener, Lis
         sendWord.setFont(font);
         sendWord.addActionListener(this);
         sendWord.setBounds(445, 235, 100, 30);
+        sendWord.setToolTipText("원하는 상대에게 귓속말을 보내보세요");
         sendWord.setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
         c.add(sendWord);
 
@@ -88,13 +91,17 @@ class ChatRoomDisplay extends JFrame implements ActionListener, KeyListener, Lis
         sendFile.setFont(font);
         sendFile.addActionListener(this);
         sendFile.setBounds(445, 275, 100, 30);
+        sendFile.setToolTipText("상대에게 파일을 보내기.");
         sendFile.setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
         c.add(sendFile);
 
-        quitRoom = new JButton("퇴 실 하 기");
+        quitRoom = new JButton("퇴 장 하 기");
         quitRoom.setFont(font);
+        quitRoom.setForeground(Color.BLACK);
+        quitRoom.setBackground(Color.PINK);
         quitRoom.addActionListener(this);
         quitRoom.setBounds(445, 315, 100, 30);
+        quitRoom.setToolTipText("참여하는 방에서 나가기.");
         quitRoom.setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
         c.add(quitRoom);
 

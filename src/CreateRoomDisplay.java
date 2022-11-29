@@ -25,25 +25,27 @@ public class CreateRoomDisplay extends JDialog implements ActionListener, ItemLi
         isRock = 0;
         roomMaxUser = 2;
         str_password = "0";
+
         c = getContentPane();
-        c.setLayout(null);
+        c.setLayout(null); //배치 관리자 지정하지 않음 -> 개선사항> 드로잉 프로그램 제작후 하드코딩 수정해야함
         JLabel label;
-        label = new JLabel("방제목");
+        label = new JLabel("개설할 방제목");
         label.setBounds(10,10,100,20);
-        label.setForeground(Color.blue);
+        label.setForeground(Color.black);
         c.add(label);
 
         tf = new JTextField();
         tf.setBounds(10, 30, 270, 20);
         c.add(tf);
 
-        label = new JLabel("최대인원");
-        label.setForeground(Color.blue);
+        label = new JLabel("최대 참여인원");
+        label.setForeground(Color.black);
         label.setBounds(10, 60, 100, 20);
         c.add(label);
 
         radioPanel = new JPanel();
         radioPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
+
         ButtonGroup group = new ButtonGroup();
         radio1 = new JRadioButton("2 명");
         radio1.setSelected(true);
@@ -66,10 +68,11 @@ public class CreateRoomDisplay extends JDialog implements ActionListener, ItemLi
 
         radioPanel.setBounds(10, 80, 280, 20);
         c.add(radioPanel);
-        label= new JLabel("공개여부");
-        label.setForeground(Color.blue);
+        label= new JLabel("공개 여부");
+        label.setForeground(Color.black);
         label. setBounds(10, 110, 100, 20);
         c.add(label);
+
         radioPanel = new JPanel();
         radioPanel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 0));
         group = new ButtonGroup();
@@ -87,15 +90,18 @@ public class CreateRoomDisplay extends JDialog implements ActionListener, ItemLi
         label.setForeground(Color.blue);
         label.setBounds(10, 160, 100, 20);
         c.add(label);
+
         password = new JPasswordField();
         password.setBounds(10, 180, 150, 20);
         password.setEditable(false);
         c.add(password);
-        ok=new JButton("확인");
+
+        ok=new JButton("확 인");
         ok.setForeground(Color.blue);
         ok.setBounds(75, 220, 70, 30);
         ok.addActionListener(this);
         c.add(ok);
+
         cancle = new JButton("취 소");
         cancle. setForeground(Color.blue);
         cancle.setBounds(155, 220, 70, 30);
@@ -146,14 +152,14 @@ public class CreateRoomDisplay extends JDialog implements ActionListener, ItemLi
     public void actionPerformed(ActionEvent ae){
         if(ae.getSource() == ok){
             if(tf.getText().equals("")){
-                JOptionPane.showMessageDialog(main,"방제목을 입력하세요.","대화방 개설",JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(main,"방제목을 입력하세요.","ERROR!!",JOptionPane.ERROR_MESSAGE);
             }else{
                 roomName = tf.getText();
                 if(isRock==1){
                     str_password = new String(password.getPassword());
                 }
                 if(isRock == 1 && str_password.equals("")){
-                    JOptionPane.showMessageDialog(main,"비밀번호를 입력하세요","대화방 개설",JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(main,"비밀번호를 입력하세요","ERROR!!",JOptionPane.ERROR_MESSAGE);
                 }else {
                     client.requestCreateRoom(roomName, roomMaxUser,isRock,str_password);
                     dispose();
