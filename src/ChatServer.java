@@ -36,7 +36,7 @@ public class ChatServer {
                     } catch(IOException el) {
                         System.out.println(TAG + el);
                     } finally {
-                        socket = null;
+                        socket = null; 
                     }
                 }
                 

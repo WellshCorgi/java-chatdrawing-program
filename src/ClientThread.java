@@ -3,6 +3,7 @@ import java.net.*;
 import java.util.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.sql.*;
 import javax.swing.*;
 
 public class ClientThread extends Thread {
@@ -19,7 +20,7 @@ public class ClientThread extends Thread {
 
     private static final String SEPARATOR = "|";
     private static final String DELIMETER = ".";
-    private static final String DELIMETER2 = "=";
+    //private static final String DELIMETER2 = "=";
 
     private static final int REQ_LOGON = 1001;
     private static final int REQ_CREATEROOM = 1011;
@@ -36,6 +37,12 @@ public class ClientThread extends Thread {
     private static final int YES_CREATEROOM = 2011;
     private static final int NO_CREATEROOM = 2012;
     private static final int YES_ENTERROOM = 2021;
+
+    // 캔버스
+    int brush_x;
+    int brush_y;
+    private static final int DRAW_CANVAS = 4001;
+    private static final int CHANGE_PEN = 4002;
 
     private static final int NO_ENTERROOM = 2022;
     private static final int YES_QUITROOM = 2031;
@@ -67,7 +74,7 @@ public class ClientThread extends Thread {
             ct_buffer = new StringBuffer(4096);
             thisThread = this;
         }catch(IOException e){
-            MessageBoxLess msgout = new MessageBoxLess(ct_waitRoom,"연결에러","서버에 접속할 수 없습니다.");
+            MessageBoxLess msgout = new MessageBoxLess(ct_waitRoom,"연결 에러","서버에 접속할 수 없습니다.");
             msgout.setVisible(true);
         }
     }
@@ -120,12 +127,12 @@ public class ClientThread extends Thread {
                         if(errCode == ERR_ALREADYUSER){
                             logonbox.dispose();
                             JOptionPane.showMessageDialog(ct_waitRoom,"이미 다른 사용자가 있습니다.","로그온",JOptionPane.ERROR_MESSAGE);
-                            id = ChatClient.getLogonID();
+                            id = LoginProject.getLogonID();
                             requestLogon(id);
                         }else if (errCode == ERR_SERVERFULL){
                             logonbox.dispose();
                             JOptionPane.showMessageDialog(ct_waitRoom,"대화방이 만원입니다.","로그온",JOptionPane.ERROR_MESSAGE);
-                            id = ChatClient.getLogonID();
+                            id = LoginProject.getLogonID();
                             requestLogon(id);
                         }
                         break;
@@ -389,8 +396,53 @@ public class ClientThread extends Thread {
                         break;
                     }
 
+                    // 캔버스
+                    case CHANGE_PEN:{
+                        try {
+                            Brush brush = ct_chatRoom.getBrush();
+                            String color = st.nextToken();
+                            if(color.equals("black"))
+                                brush.setColor(Color.black);
+                            else if(color.equals("white"))
+                                brush.setColor(Color.white);
+                            else if(color.equals("red"))
+                                brush.setColor(Color.red);
+                            else if(color.equals("orange"))
+                                brush.setColor(Color.orange);
+                            else if(color.equals("yellow"))
+                                brush.setColor(Color.yellow);
+                            else if(color.equals("green"))
+                                brush.setColor(Color.green);
+                            else if(color.equals("blue"))
+                                brush.setColor(Color.blue);
+                            else if(color.equals("magenta"))
+                                brush.setColor(Color.magenta);
+                            else if(color.equals("lightGray"))
+                                brush.setColor(Color.lightGray);
+                            else if(color.equals("erase"))
+                                brush.setClearC(false);
+                                brush.repaint();
+                        }catch(NoSuchElementException e) {
+                            return;
+                        }
+                        break;
+                    }
+                    case DRAW_CANVAS:{
+                        try {
+                            Brush brush = ct_chatRoom.getBrush();
+                            brush_x = Integer.parseInt(st.nextToken());
+                            brush_y = Integer.parseInt(st.nextToken());
+                            brush.setX(brush_x);
+                            brush.setY(brush_y);
+                            brush.repaint();
+					        ct_chatRoom.brushBuff();
+                            break;
+                        }catch(NoSuchElementException e) {
+                            return;
+                        }
+                    }
                 }
-                Thread.sleep(200);
+                Thread.sleep(1);
             }
         }catch(InterruptedException e){
             System.out.println(e);
@@ -477,7 +529,8 @@ public class ClientThread extends Thread {
             System.out.println(e);
         }
     }
-
+    
+    Connection conn;
     public void requestSendWord(String data){
         try{
             ct_buffer.setLength(0);
@@ -488,12 +541,33 @@ public class ClientThread extends Thread {
             ct_buffer.append(ct_roomNumber);
             ct_buffer.append(SEPARATOR);
             ct_buffer.append(data);
+
+            String chat_sql = "INSERT INTO chatroom_info(ct_roomNumber,ct_logonID,data) values (?, ?, ?)";
+            try {
+    
+                String url = "jdbc:mysql://localhost:3306/besteleven?useSSL=false";
+                conn = DriverManager.getConnection(url, "root", "1234");
+               
+                PreparedStatement pstmt = conn.prepareStatement(chat_sql);
+
+                pstmt.setInt(1, ct_roomNumber);
+                pstmt.setString(2, ct_logonID);
+                pstmt.setString(3, data);
+
+                int r = pstmt.executeUpdate();
+                System.out.println("대화내용 자동저장 " + r);
+            } catch (SQLException e1) {
+                System.out.println("SQL error" + e1.getMessage());
+            } // try ,catch
+
             send(ct_buffer.toString());
         }catch (IOException e){
             System.out.println(e);
         }
     }
 
+
+    
     public void requestSendWordTo(String data, String idTo){
         try{
             ct_buffer.setLength(0);
@@ -538,6 +612,36 @@ public class ClientThread extends Thread {
             ct_buffer.append(ct_roomNumber);
             ct_buffer.append(SEPARATOR);
             ct_buffer.append(idTo);
+            send(ct_buffer.toString());
+        }catch (IOException e){
+            System.out.println(e);
+        }
+    }
+    
+    public void requestDraw(int x, int y) {
+        try{
+            ct_buffer.setLength(0);
+            ct_buffer.append(DRAW_CANVAS);
+            ct_buffer.append(SEPARATOR);
+            ct_buffer.append(ct_roomNumber);
+            ct_buffer.append(SEPARATOR);
+            ct_buffer.append(x);
+            ct_buffer.append(SEPARATOR);
+            ct_buffer.append(y);
+            send(ct_buffer.toString());
+        }catch (IOException e){
+            System.out.println(e);
+        }
+    }
+
+    public void requestChangePen(String color) {
+        try{
+            ct_buffer.setLength(0);
+            ct_buffer.append(CHANGE_PEN);
+            ct_buffer.append(SEPARATOR);
+            ct_buffer.append(ct_roomNumber);
+            ct_buffer.append(SEPARATOR);
+            ct_buffer.append(color);
             send(ct_buffer.toString());
         }catch (IOException e){
             System.out.println(e);

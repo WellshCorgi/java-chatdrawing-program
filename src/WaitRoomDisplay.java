@@ -64,7 +64,7 @@ public class WaitRoomDisplay extends JFrame implements ActionListener, KeyListen
         label.setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
         label.setFont(font);
         p.add(label);
-        label = new JLabel("방장");
+        label = new JLabel("개설자");
         label.setBounds(385, 25, 58, 20);
         label.setBorder(new SoftBevelBorder(SoftBevelBorder.RAISED));
         label.setFont(font);

@@ -53,6 +53,10 @@ class ServerThread extends Thread {
     private static final int MDY_WAITUSER = 2003;
     private static final int MDY_WAITINFO = 2013;
     private static final int MDY_ROOMUSER = 2023;
+
+    // 캔버스
+    private static final int DRAW_CANVAS = 4001;
+    private static final int CHANGE_PEN = 4002;
     
     private static final int ERR_ALREADYUSER = 3001;
     private static final int ERR_SERVERFULL = 3002;
@@ -131,37 +135,21 @@ class ServerThread extends Thread {
         }
     }
 
-    private synchronized void pt_Draw(String[] parsReaderMsg) {
+    private synchronized void pt_drawCanvas(int roomNumber, int x, int y) {
         try {
-            if (parsReaderMsg[0].equals("DRAW")) {
-                ArrayList<ServerThread> vcClient = st_server.getvcClient();
-                for(int i = 0; i < vcClient.size(); i++) {
-                    if (vcClient.get(i) != this) {
-                        vcClient.get(i).st_out.writeUTF("DRAW&"+ parsReaderMsg[1]);
-                    }
-                }
-            }
+            String ids = st_waitRoom.getRoomInfo(roomNumber);
+            st_buffer.setLength(0);
+            st_buffer.append(DRAW_CANVAS);
+            st_buffer.append(SEPARATOR);
+            st_buffer.append(x);
+            st_buffer.append(SEPARATOR);
+            st_buffer.append(y);
+            pt_broadcast(st_buffer.toString(), roomNumber);
         } catch (IOException e) {
             System.out.println(TAG + e);
         }
     }
     
-    private synchronized void pt_Color(String[] parsReaderMsg) {
-        try {
-        if (parsReaderMsg[0].equals("COLOR")) {
-            System.out.println("서버 칼라요청 메시지 들어옴");
-            ArrayList<ServerThread> vcClient = st_server.getvcClient();
-            for(int i = 0; i < vcClient.size(); i++) {
-                if (vcClient.get(i) != this) {
-                    vcClient.get(i).st_out.writeUTF("COLOR&"+ parsReaderMsg[1]);
-                    System.out.println("칼라변경 메시지 보냄");
-                    }
-                }
-            }
-        } catch (IOException e) {
-            System.out.println(TAG + e);
-        }
-    }
 
     @Override
     public void run() {
@@ -426,8 +414,36 @@ class ServerThread extends Thread {
                     }
                     break;
                 }
+           
+                case DRAW_CANVAS : {
+                    int roomNumber = Integer.parseInt(st.nextToken());
+                    int x = Integer.parseInt(st.nextToken());
+                    int y = Integer.parseInt(st.nextToken());
+
+                    st_buffer.setLength(0);
+                    st_buffer.append(DRAW_CANVAS);
+                    st_buffer.append(SEPARATOR);
+                    st_buffer.append(x);
+                    st_buffer.append(SEPARATOR);
+                    st_buffer.append(y);
+                    
+                    pt_broadcast(st_buffer.toString(), roomNumber);
+                    break;
+                }
+                case CHANGE_PEN : {
+                    int roomNumber = Integer.parseInt(st.nextToken());
+                    String color = st.nextToken();
+
+                    st_buffer.setLength(0);
+                    st_buffer.append(CHANGE_PEN);
+                    st_buffer.append(SEPARATOR);
+                    st_buffer.append(color);
+                    
+                    pt_broadcast(st_buffer.toString(), roomNumber);
+                    break;
+                }
             }
-            Thread.sleep(100);
+            Thread.sleep(1);
         }
     }catch(NullPointerException e) {
     }catch(InterruptedException e) {
